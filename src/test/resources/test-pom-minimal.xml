@@ -25,6 +25,11 @@
         <artifactId>xbdd-maven-plugin</artifactId>
         <configuration>
           <host>http://xbdd.io</host>
+          <username>xbdd</username>
+          <password>password</password>
+          
+          <!--  inject this to mock out an actual project using this plugin -->
+          <project implementation="au.com.flyingkite.xbdd.XbddProjectStub"/>
         </configuration>
       </plugin>
     </plugins>

@@ -20,57 +20,68 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+
+import lombok.Getter;
 
 @Mojo(name = "upload", defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST)
 public class SendTestResultsToXbddMojo extends AbstractMojo {
 
-	private static final String XBDD_HOST = "xbdd.host";
-	private static final String XBDD_USERNAME = "xbdd.username";
-	private static final String XBDD_PASSWORD = "xbdd.password";
-	private static final String XBDD_PROJECT_KEY = "xbdd.projectkey";
-	private static final String XBDD_PROJECT_VERSION = "xbdd.projectversion";
-	private static final String XBDD_PROJECT_BUILD_NUMBER = "xbdd.buildNumber";
+	private static final String XBDD_HOST = "host";
+	private static final String XBDD_USERNAME = "username";
+	private static final String XBDD_PASSWORD = "password";
+	private static final String XBDD_PROJECT_KEY = "projectKey";
+	private static final String XBDD_PROJECT_VERSION = "projectVersion";
+	private static final String XBDD_PROJECT_BUILD_NUMBER = "buildNumber";
 
 	/**
 	 * The host URL of XBDD
 	 */
+	@Getter
 	@Parameter(property = XBDD_HOST)
 	private String host;
 
 	/**
 	 * The username to use to send reports to XBDD
 	 */
+	@Getter
 	@Parameter(property = XBDD_USERNAME)
 	private String username;
 
 	/**
 	 * The password to use to send reports to XBDD
 	 */
+	@Getter
 	@Parameter(property = XBDD_PASSWORD)
 	private String password;
 
 	/**
 	 * The project key in XBDD
 	 */
-	@Parameter(property = XBDD_PROJECT_KEY, defaultValue = "${project.artifactId}")
+	@Getter
+	@Parameter(property = XBDD_PROJECT_KEY)
 	private String projectKey;
 
 	/**
 	 * The project version in XBDD
 	 */
-	@Parameter(property = XBDD_PROJECT_VERSION, defaultValue = "${project.version}")
+	@Getter
+	@Parameter(property = XBDD_PROJECT_VERSION)
 	private String projectVersion;
 
 	/**
 	 * The build number to attach the report to
 	 */
+	@Getter
 	@Parameter(property = XBDD_PROJECT_BUILD_NUMBER)
 	private String buildNumber;
 
-	/*
-	 * <xbdd.host>https://xbdd/</xbdd.host> <xbdd.username>xbdd</xbdd.username> <xbdd.password>xbdd</xbdd.password>
-	 * <xbdd.projectkey>test1</xbdd.projectkey> <xbdd.projectversion>test1</xbdd.projectversion> <xbdd.buildnumber>1</xbdd.buildnumber>
+	/**
+	 * The project that is running this plugin
 	 */
+	@Getter
+	@Parameter(defaultValue = "${project}", required = true, readonly = true)
+	MavenProject project;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -79,15 +90,22 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			this.buildNumber = String.valueOf(Instant.now().toEpochMilli());
 		}
 
+		if (StringUtils.isBlank(this.projectKey)) {
+			this.projectKey = this.project.getArtifactId();
+		}
+
+		if (StringUtils.isBlank(this.projectVersion)) {
+			this.projectVersion = this.project.getVersion();
+		}
+
 		validate(this.host, XBDD_HOST);
 		validate(this.username, XBDD_USERNAME);
 		validate(this.password, XBDD_PASSWORD);
 
-		getLog().info("Hello, world.");
-
 		getLog().info("projectKey:" + this.projectKey);
-
 		getLog().info("buildNumber: " + this.buildNumber);
+
+		upload();
 
 	}
 
@@ -103,7 +121,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		}
 	}
 
-	private void upload() {
+	protected void upload() {
 
 		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(this.username, this.password));
