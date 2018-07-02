@@ -2,6 +2,7 @@ package au.com.flyingkite.xbdd;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
@@ -101,12 +102,15 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		validate(this.host, XBDD_HOST);
 		validate(this.username, XBDD_USERNAME);
 		validate(this.password, XBDD_PASSWORD);
+		validate(this.projectKey, XBDD_PROJECT_KEY);
+		validate(this.projectVersion, XBDD_PROJECT_VERSION);
 
-		getLog().info("projectKey:" + this.projectKey);
-		getLog().info("buildNumber: " + this.buildNumber);
+		if (anyEmpty(this.host, this.username, this.password, this.projectKey, this.projectVersion)) {
+			getLog().error("Required configuration missing. Aborting upload.");
+			return;
+		}
 
 		upload();
-
 	}
 
 	/**
@@ -117,17 +121,33 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 */
 	private void validate(final String property, final String key) {
 		if (StringUtils.isBlank(property)) {
-			getLog().error(String.format("%s was not set. Cannot upload to XBDD.", key));
+			getLog().error(String.format("'%s' was not set. Cannot upload to XBDD.", key));
 		}
 	}
 
+	/**
+	 * Check if any of the provided elements are empty
+	 *
+	 * @param elements elements to check for emptiness
+	 * @return
+	 */
+	private boolean anyEmpty(final String... elements) {
+		return Arrays.asList(elements).stream().anyMatch(e -> StringUtils.isBlank(e));
+	}
+
+	/**
+	 * Do the upload work
+	 */
 	protected void upload() {
+
+		final String url = getUrl();
+		getLog().info(String.format("Uploading to: %s ", url));
 
 		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(this.username, this.password));
 
 		final CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credentialsProvider).build();
-		final HttpPut request = new HttpPut(getUrl());
+		final HttpPut request = new HttpPut(url);
 
 		final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);

@@ -11,6 +11,11 @@
         <groupId>au.com.flyingkite.xbdd-maven-plugin</groupId>
         <artifactId>xbdd-maven-plugin</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <configuration>
+        	<host>http://localhost:8080/</host>
+        	<username>xbdd</username>
+        	<password>password</password>
+        </configuration>
       </plugin>
     </plugins>
   </build>
