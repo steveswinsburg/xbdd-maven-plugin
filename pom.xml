@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>au.com.flyingkite.xbdd-maven-plugin</groupId>
@@ -11,7 +11,7 @@
 	<description>
       A Maven plugin to automatically send test results to XBDD. 
       For more information on XBDD, visit: https://github.com/orionhealth/XBDD
-    </description>
+	</description>
 	<url>https://github.com/steveswinsburg/xbdd-maven-plugin</url>
 
 	<properties>
@@ -72,6 +72,19 @@
 				<goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>some 
 				directory</source> ... </sources> </configuration> </execution> </executions> 
 				</plugin> -->
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
+					<check />
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
