@@ -1,5 +1,6 @@
 package au.com.flyingkite.xbdd;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 
@@ -30,9 +31,9 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 @Mojo( name = "upload", defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST)
 public class SendTestResultsToXbddMojo extends AbstractMojo {
 
-	private final static String XBDD_HOST = "xbdd.host";
-	private final static String XBDD_USERNAME = "xbdd.username";
-	private final static String XBDD_PASSWORD = "xbdd.password";
+	private static final String XBDD_HOST = "xbdd.host";
+	private static final String XBDD_USERNAME = "xbdd.username";
+	private static final String XBDD_PASSWORD = "xbdd.password";
 
 	
 	@Parameter( property = XBDD_HOST)
@@ -50,7 +51,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	@Parameter( property = "xbdd.projectversion", defaultValue="${project.version}")
 	private String projectVersion;
 	
-	@Parameter( property = "xbdd.buildNumber")
+	@Parameter( property = "xbdd.buildNumber", defaultValue="${project.version}")
 	private String buildNumber;
 	
 	
@@ -107,7 +108,12 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 		//builder.add
 		
-		CloseableHttpResponse response = httpClient.execute(request);
+		try {
+			CloseableHttpResponse response = httpClient.execute(request);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		
 	}
