@@ -1,20 +1,30 @@
 package au.com.flyingkite.xbdd;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -22,6 +32,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.utils.io.FileUtils;
 
 import lombok.Getter;
 
@@ -34,6 +45,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private static final String XBDD_PROJECT_KEY = "projectKey";
 	private static final String XBDD_PROJECT_VERSION = "projectVersion";
 	private static final String XBDD_PROJECT_BUILD_NUMBER = "buildNumber";
+	private static final String XBDD_REPORT = "report";
 
 	/**
 	 * The host URL of XBDD
@@ -77,6 +89,10 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	@Parameter(property = XBDD_PROJECT_BUILD_NUMBER)
 	private String buildNumber;
 
+	@Getter
+	@Parameter(property = XBDD_REPORT)
+	private List<String> reports;
+
 	/**
 	 * The project that is running this plugin
 	 */
@@ -99,6 +115,8 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			this.projectVersion = this.project.getVersion();
 		}
 
+		cleanVersion(this.projectVersion);
+
 		validate(this.host, XBDD_HOST);
 		validate(this.username, XBDD_USERNAME);
 		validate(this.password, XBDD_PASSWORD);
@@ -110,7 +128,17 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			return;
 		}
 
-		upload();
+		if (this.reports.isEmpty()) {
+			getLog().error("No reports to upload. Aborting upload.");
+			return;
+		}
+
+		try {
+			upload();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -137,8 +165,12 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 	/**
 	 * Do the upload work
+	 *
+	 * @throws KeyStoreException
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
 	 */
-	protected void upload() {
+	protected void upload() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 
 		final String url = getUrl();
 		getLog().info(String.format("Uploading to: %s ", url));
@@ -146,15 +178,39 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(this.username, this.password));
 
-		final CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credentialsProvider).build();
+		// ignore certificates
+		final SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
+
+		final CloseableHttpClient httpClient = HttpClientBuilder
+				.create()
+				.setDefaultCredentialsProvider(credentialsProvider)
+				.setSSLContext(sslContext)
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+				.build();
 		final HttpPut request = new HttpPut(url);
 
 		final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-		// builder.add
+
+		this.reports.forEach(r -> {
+
+			if (StringUtils.isBlank(r)) {
+				return;
+			}
+
+			try {
+				builder.addTextBody(XBDD_REPORT, FileUtils.fileRead(r));
+			} catch (final IOException e) {
+				getLog().error(String.format("Cannot upload: %s", r));
+			}
+		});
 
 		try {
 			final CloseableHttpResponse response = httpClient.execute(request);
+
+			getLog().info(String.format("XBDD upload result: %d %s", response.getStatusLine().getStatusCode(),
+					response.getStatusLine().getReasonPhrase()));
+
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -186,6 +242,38 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 */
 	private String slashify(final String s) {
 		return StringUtils.appendIfMissing(s, "/");
+	}
+
+	/**
+	 * XBDD has a requirement for major.minor.servicepack versioning, no exceptions. Ensure the version is in that format.
+	 *
+	 * @param version
+	 * @return a three part version
+	 */
+	private void cleanVersion(final String version) {
+
+		final List<String> parts = new LinkedList<>(Arrays.asList(StringUtils.split(version, '.')));
+
+		// remove anything that doesn't look like a number
+		parts.removeIf(e -> !NumberUtils.isParsable(e));
+
+		if (parts.isEmpty()) {
+			throw new IllegalArgumentException("Version was invalid: " + version);
+		}
+
+		// pad it out to 3 if necessary
+		while (parts.size() < 3) {
+			parts.add("0");
+		}
+
+		// retain maximum of 3 elements
+		if (parts.size() > 3) {
+			parts.subList(2, 3).clear();
+		}
+
+		getLog().info(String.format("New version: %s", parts));
+
+		this.projectVersion = String.join(".", parts);
 	}
 
 }
