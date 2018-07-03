@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
@@ -103,19 +104,11 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-		if (StringUtils.isBlank(this.buildNumber)) {
-			this.buildNumber = String.valueOf(Instant.now().toEpochMilli());
-		}
+		ensureBuildNumber();
+		ensureProjectKey();
+		ensureProjectVersion();
 
-		if (StringUtils.isBlank(this.projectKey)) {
-			this.projectKey = this.project.getArtifactId();
-		}
-
-		if (StringUtils.isBlank(this.projectVersion)) {
-			this.projectVersion = this.project.getVersion();
-		}
-
-		cleanVersion(this.projectVersion);
+		cleanReports();
 
 		validate(this.host, XBDD_HOST);
 		validate(this.username, XBDD_USERNAME);
@@ -136,8 +129,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		try {
 			upload();
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			getLog().error(String.format("Error uploading report: %s %s", e.getClass().getName(), e.getMessage()));
 		}
 	}
 
@@ -178,6 +170,8 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(this.username, this.password));
 
+		getLog().info(String.format("Credentials: %s ", credentialsProvider.toString()));
+
 		// ignore certificates
 		final SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
 
@@ -194,9 +188,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 		this.reports.forEach(r -> {
 
-			if (StringUtils.isBlank(r)) {
-				return;
-			}
+			getLog().info(String.format("Uploading report: %s ", r));
 
 			try {
 				builder.addTextBody(XBDD_REPORT, FileUtils.fileRead(r));
@@ -224,7 +216,6 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 * @return the url
 	 */
 	private String getUrl() {
-		// https://host/xbdd/rest/reports/GDM/${gdm.version}/${bamboo.build.number}
 		final StringBuilder sb = new StringBuilder();
 		sb.append(slashify(this.host));
 		sb.append("xbdd/rest/reports/");
@@ -244,21 +235,38 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		return StringUtils.appendIfMissing(s, "/");
 	}
 
+	private void ensureBuildNumber() {
+		if (StringUtils.isBlank(this.buildNumber)) {
+			this.buildNumber = String.valueOf(Instant.now().toEpochMilli());
+		}
+	}
+
+	private void ensureProjectKey() {
+		if (StringUtils.isBlank(this.projectKey)) {
+			this.projectKey = this.project.getArtifactId();
+		}
+	}
+
+	private void ensureProjectVersion() {
+		if (StringUtils.isBlank(this.projectKey)) {
+			this.projectVersion = this.project.getVersion();
+		}
+
+		cleanVersion();
+	}
+
 	/**
 	 * XBDD has a requirement for major.minor.servicepack versioning, no exceptions. Ensure the version is in that format.
-	 *
-	 * @param version
-	 * @return a three part version
 	 */
-	private void cleanVersion(final String version) {
+	private void cleanVersion() {
 
-		final List<String> parts = new LinkedList<>(Arrays.asList(StringUtils.split(version, '.')));
+		final List<String> parts = new LinkedList<>(Arrays.asList(StringUtils.split(this.projectVersion, '.')));
 
 		// remove anything that doesn't look like a number
 		parts.removeIf(e -> !NumberUtils.isParsable(e));
 
 		if (parts.isEmpty()) {
-			throw new IllegalArgumentException("Version was invalid: " + version);
+			throw new IllegalArgumentException("Version was invalid: " + this.projectVersion);
 		}
 
 		// pad it out to 3 if necessary
@@ -274,6 +282,13 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		getLog().info(String.format("New version: %s", parts));
 
 		this.projectVersion = String.join(".", parts);
+	}
+
+	/**
+	 * Remove empty report paths
+	 */
+	private void cleanReports() {
+		this.reports = this.reports.stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toList());
 	}
 
 }
