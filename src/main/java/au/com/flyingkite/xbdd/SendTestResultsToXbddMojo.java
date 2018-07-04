@@ -14,15 +14,15 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.http.auth.AuthScope;
+import org.apache.http.HttpHeaders;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -128,7 +128,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 		try {
 			upload();
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | AuthenticationException e) {
 			getLog().error(String.format("Error uploading report: %s %s", e.getClass().getName(), e.getMessage()));
 		}
 	}
@@ -161,41 +161,46 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 * @throws KeyStoreException
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
+	 * @throws AuthenticationException
 	 */
-	protected void upload() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+	protected void upload() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, AuthenticationException {
 
 		final String url = getUrl();
 		getLog().info(String.format("Uploading to: %s ", url));
 
-		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(this.username, this.password));
-
-		getLog().info(String.format("Credentials: %s ", credentialsProvider.toString()));
+		final UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.username, this.password);
 
 		// ignore certificates
-		final SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (x509CertChain, authType) -> true).build();
+		final SSLContext sslContext = new SSLContextBuilder()
+				.loadTrustMaterial(null, (x509CertChain, authType) -> true)
+				.build();
 
 		final CloseableHttpClient httpClient = HttpClientBuilder
 				.create()
-				.setDefaultCredentialsProvider(credentialsProvider)
 				.setSSLContext(sslContext)
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
 				.build();
-		final HttpPut request = new HttpPut(url);
 
-		final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+		final HttpPut request = new HttpPut(url);
+		request.addHeader(new BasicScheme().authenticate(creds, request, null));
+		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+		final MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+		entity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 
 		this.reports.forEach(r -> {
 
 			getLog().info(String.format("Uploading report: %s ", r));
 
 			try {
-				builder.addTextBody(XBDD_REPORT, FileUtils.fileRead(r));
+				entity.addTextBody(XBDD_REPORT, FileUtils.fileRead(r));
 			} catch (final IOException e) {
 				getLog().error(String.format("Cannot upload: %s", r));
 			}
 		});
+
+		// finalise the entity
+		request.setEntity(entity.build());
 
 		try {
 			final CloseableHttpResponse response = httpClient.execute(request);
