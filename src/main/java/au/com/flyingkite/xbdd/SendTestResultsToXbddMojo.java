@@ -20,8 +20,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -128,7 +127,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 		try {
 			upload();
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | AuthenticationException e) {
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException | AuthenticationException | IOException e) {
 			getLog().error(String.format("Error uploading report: %s %s", e.getClass().getName(), e.getMessage()));
 		}
 	}
@@ -162,8 +161,10 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
 	 * @throws AuthenticationException
+	 * @throws IOException
 	 */
-	protected void upload() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, AuthenticationException {
+	protected void upload()
+			throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, AuthenticationException, IOException {
 
 		final String url = getUrl();
 		getLog().info(String.format("Uploading to: %s ", url));
@@ -185,33 +186,39 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		request.addHeader(new BasicScheme().authenticate(creds, request, null));
 		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
-		final MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-		entity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+		// StringEntity entity = new StringEntity(json);
+		// httpPost.setEntity(entity);
+		// httpPost.setHeader("Accept", "application/json");
+		// httpPost.setHeader("Content-type", "application/json");
 
 		this.reports.forEach(r -> {
 
 			getLog().info(String.format("Uploading report: %s ", r));
+			StringEntity entity = null;
 
 			try {
-				entity.addTextBody(XBDD_REPORT, FileUtils.fileRead(r));
+				final String json = FileUtils.fileRead(r);
+				entity = new StringEntity(json);
+
 			} catch (final IOException e) {
 				getLog().error(String.format("Cannot upload: %s", r));
 			}
+
+			request.setEntity(entity);
+
+			try {
+				final CloseableHttpResponse response = httpClient.execute(request);
+
+				getLog().info(String.format("XBDD upload result: %d %s", response.getStatusLine().getStatusCode(),
+						response.getStatusLine().getReasonPhrase()));
+
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+
 		});
 
-		// finalise the entity
-		request.setEntity(entity.build());
-
-		try {
-			final CloseableHttpResponse response = httpClient.execute(request);
-
-			getLog().info(String.format("XBDD upload result: %d %s", response.getStatusLine().getStatusCode(),
-					response.getStatusLine().getReasonPhrase()));
-
-		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		httpClient.close();
 
 	}
 
