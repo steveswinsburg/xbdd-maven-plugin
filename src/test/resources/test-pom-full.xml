@@ -27,13 +27,15 @@
 					<host>http://xbdd.io</host>
 					<username>xbdd</username>
 					<password>password</password>
-					<projectKey>xbdd-maven-plugin-tester</projectKey>
-					<projectVersion>1.0</projectVersion>
+					<projectKey>xbdd-maven-plugin-test</projectKey>
+					<projectVersion>1.0.0</projectVersion>
 					<buildNumber>999</buildNumber>
 					<reports>
 						<report></report>
 						<report></report>
 					</reports>
+        			<!--  inject this to mock out an actual project using this plugin -->
+        			<project implementation="au.com.flyingkite.xbdd.XbddProjectStub"/>
 				</configuration>
 			</plugin>
 		</plugins>

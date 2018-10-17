@@ -260,7 +260,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	}
 
 	private void ensureProjectVersion() {
-		if (StringUtils.isBlank(this.projectKey)) {
+		if (StringUtils.isBlank(this.projectVersion)) {
 			this.projectVersion = this.project.getVersion();
 		}
 
@@ -300,7 +300,9 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 * Remove empty report paths
 	 */
 	private void cleanReports() {
-		this.reports = this.reports.stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toList());
+		if (this.reports != null) {
+			this.reports = this.reports.stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toList());
+		}
 	}
 
 }
