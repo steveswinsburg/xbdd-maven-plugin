@@ -8,4 +8,5 @@ For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 [![codecov](https://codecov.io/gh/steveswinsburg/xbdd-maven-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/steveswinsburg/xbdd-maven-plugin)
 
 
-
+# Building
+TODO: Add steps on how to build.
