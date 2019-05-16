@@ -8,5 +8,25 @@ For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 [![codecov](https://codecov.io/gh/steveswinsburg/xbdd-maven-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/steveswinsburg/xbdd-maven-plugin)
 
 
-# Building
-TODO: Add steps on how to build.
+# Commands
+Build and test: 
+````
+mvn clean install
+````
+
+Snapshot deploy: 
+```
+mvn clean deploy
+```
+check: https://oss.sonatype.org/content/repositories/snapshots/
+
+Release deploy: 
+```
+mvn release:clean release:prepare
+mvn release:perform
+```
+
+# Release docs
+* https://central.sonatype.org/pages/working-with-pgp-signatures.html
+* https://central.sonatype.org/pages/apache-maven.html
+
