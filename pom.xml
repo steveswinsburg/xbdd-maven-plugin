@@ -14,6 +14,21 @@
 	</description>
 	<url>https://github.com/steveswinsburg/xbdd-maven-plugin</url>
 
+	<developers>
+		<developer>
+			<name>Steve Swinsburg</name>
+			<email>steve.swinsburg@gmail.com</email>
+			<timezone>10</timezone>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:steveswinsburg/xbdd-maven-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:steveswinsburg/xbdd-maven-plugin.git</developerConnection>
+		<url>scm:git:git@github.com:steveswinsburg/xbdd-maven-plugin.git</url>
+		<tag>HEAD</tag>
+	</scm>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
