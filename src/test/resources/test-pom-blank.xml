@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>au.com.flyingkite.xbdd-maven-plugin</groupId>
+  <groupId>io.steveswinsburg</groupId>
   <artifactId>xbdd-maven-plugin-test</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -21,12 +21,12 @@
   <build>
     <plugins>
       <plugin>
-      	<groupId>au.com.flyingkite.xbdd-maven-plugin</groupId>
+      	<groupId>io.steveswinsburg</groupId>
         <artifactId>xbdd-maven-plugin</artifactId>
         <configuration>
         	<!--  no base config -->
         	<!--  inject this to mock out an actual project using this plugin -->
-        	<project implementation="au.com.flyingkite.xbdd.XbddProjectStub"/>
+        	<project implementation="io.steveswinsburg.xbdd.XbddProjectStub"/>
         </configuration>
       </plugin>
     </plugins>

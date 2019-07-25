@@ -1,5 +1,5 @@
 
-package au.com.flyingkite.xbdd;
+package io.steveswinsburg.xbdd;
 
 import java.io.File;
 
