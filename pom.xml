@@ -136,6 +136,16 @@
 				</configuration>
 			</plugin>
 
+			
+		</plugins>
+	</build>
+	
+	<profiles>
+	
+	<profile>
+		<id>release</id>
+		<build>
+			<plugins>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
@@ -172,8 +182,16 @@
 					<goals>deploy</goals>
 				</configuration>
 			</plugin>
-		</plugins>
-	</build>
+			</plugins>
+		
+		</build>
+	
+	
+	
+	</profile>
+	
+	</profiles>
+	
 
 	<distributionManagement>
 		<snapshotRepository>
