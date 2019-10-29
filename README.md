@@ -11,17 +11,44 @@ For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 
 TODO
 
-# Commands
+# For developers (building)
 Build and test: 
 ````
 mvn clean install
 ````
 
-Snapshot deploy: 
+# For developers (releasing)
+
+1. Read https://central.sonatype.org/pages/working-with-pgp-signatures.html
+2. Install `gpg`
+3. Add a release profile to your `~/.m2/settings.xml`:
 ```
-mvn clean deploy
+    <profile>
+      <id>release</id>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.passphrase>your passphrase</gpg.passphrase>
+      </properties>
+    </profile>
 ```
-check: https://oss.sonatype.org/content/repositories/snapshots/
+4. Add a server block to your `~/.m2/settings.xml`:
+```
+    <servers>
+      <!-- sonatype-->
+      <server>
+        <id>ossrh</id>
+        <username>your username</username>
+        <password>your password</password>
+      </server>
+    </servers>
+```
+_Note that this can be a token generated from https://oss.sonatype.org/._
+
+**Snapshot deploy:** 
+```
+mvn clean deploy -Prelease
+```
+It should build and upload. Go to https://oss.sonatype.org/ and search for `xbdd-maven-plugin`. Check Maven central later.
 
 Release deploy: 
 ```
