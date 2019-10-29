@@ -1,11 +1,11 @@
-package io.steveswinsburg.xbdd;
+package io.github.steveswinsburg.xbdd;
 
 import java.io.File;
 
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.mockito.Mockito;
 
-import io.steveswinsburg.xbdd.SendTestResultsToXbddMojo;
+import io.github.steveswinsburg.xbdd.SendTestResultsToXbddMojo;
 import lombok.Getter;
 
 public class SendTestResultsToXbddMojoTest extends AbstractMojoTestCase {
