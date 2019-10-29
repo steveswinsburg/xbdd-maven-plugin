@@ -1,5 +1,5 @@
 
-package io.steveswinsburg.xbdd;
+package io.github.steveswinsburg.xbdd;
 
 import java.io.File;
 

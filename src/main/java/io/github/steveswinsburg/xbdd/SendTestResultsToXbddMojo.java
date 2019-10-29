@@ -1,4 +1,4 @@
-package io.steveswinsburg.xbdd;
+package io.github.steveswinsburg.xbdd;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
