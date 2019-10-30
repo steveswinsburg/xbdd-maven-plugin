@@ -46,7 +46,7 @@ _Note that this can be a token generated from https://oss.sonatype.org/._
 
 **Snapshot deploy:** 
 ```
-mvn clean deploy -Prelease
+mvn clean deploy -P release
 ```
 It should build and upload. Go to https://oss.sonatype.org/ and search for `xbdd-maven-plugin`. 
 
