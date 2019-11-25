@@ -9,7 +9,23 @@ For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 
 # Usage
 
-TODO
+```
+				<groupId>io.github.steveswinsburg</groupId>
+				<artifactId>xbdd-maven-plugin</artifactId>
+				<version>1.2</version>
+				<configuration>
+					<host>https://xbdd</host>
+					<username>${xbdd.username}</username>
+					<password>${xbdd.password}</password>
+					<projectVersion>${project.version}</projectVersion>
+					<buildNumber>${bamboo.build.number}</buildNumber>
+					<reports>
+						<report>${project.build.directory}/cucumber-report-manual.json</report>
+						<report>${project.build.directory}/cucumber-report-auto.json</report>
+					</reports>
+				</configuration>
+```
+Run via `mvn clean verify xbdd:upload`.
 
 # For developers (building)
 Build and test: 
