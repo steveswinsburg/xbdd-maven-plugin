@@ -10,22 +10,31 @@ For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 # Usage
 
 ```
-				<groupId>io.github.steveswinsburg</groupId>
-				<artifactId>xbdd-maven-plugin</artifactId>
-				<version>1.2</version>
-				<configuration>
-					<host>https://xbdd</host>
-					<username>${xbdd.username}</username>
-					<password>${xbdd.password}</password>
-					<projectVersion>${project.version}</projectVersion>
-					<buildNumber>${bamboo.build.number}</buildNumber>
-					<reports>
-						<report>${project.build.directory}/cucumber-report-manual.json</report>
-						<report>${project.build.directory}/cucumber-report-auto.json</report>
-					</reports>
-				</configuration>
+<groupId>io.github.steveswinsburg</groupId>
+<artifactId>xbdd-maven-plugin</artifactId>
+<version>1.2</version>
+<configuration>
+	<host>https://xbdd</host>
+	<username>${xbdd.username}</username>
+	<password>${xbdd.password}</password>
+	<projectKey>your-project-name<projectKey>
+	<projectVersion>${project.version}</projectVersion>
+	<buildNumber>${bamboo.build.number}</buildNumber>
+	<reports>
+		<report>${project.build.directory}/cucumber-report-manual.json</report>
+		<report>${project.build.directory}/cucumber-report-auto.json</report>
+	</reports>
+</configuration>
 ```
 Run via `mvn clean verify xbdd:upload`.
+
+# Configuration
+
+*host* - the hostname of your XBDD server.
+*username* - username of the XBDD user to upload the reports as. Best to pass it in on the commandline. In the example above, `-Dxbdd.username=theusername`
+*password* - password for the XBDD user. Best to pass it in on the commandline as well. In the example above, `-Dxbdd.password=thepassword`
+*projectKey* - optional. The name of the project in XBDD. If left blank it will default to the artifactId of the project.
+MORE HERE.
 
 # For developers (building)
 Build and test: 
