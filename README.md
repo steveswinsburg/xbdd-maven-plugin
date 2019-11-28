@@ -9,32 +9,40 @@ For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 
 # Usage
 
+Add the following block to your pom.xml
+
 ```
-<groupId>io.github.steveswinsburg</groupId>
-<artifactId>xbdd-maven-plugin</artifactId>
-<version>1.2</version>
-<configuration>
-	<host>https://xbdd</host>
-	<username>${xbdd.username}</username>
-	<password>${xbdd.password}</password>
-	<projectKey>your-project-name<projectKey>
-	<projectVersion>${project.version}</projectVersion>
-	<buildNumber>${bamboo.build.number}</buildNumber>
-	<reports>
-		<report>${project.build.directory}/cucumber-report-manual.json</report>
-		<report>${project.build.directory}/cucumber-report-auto.json</report>
-	</reports>
-</configuration>
+<plugin>
+  <groupId>io.github.steveswinsburg</groupId>
+  <artifactId>xbdd-maven-plugin</artifactId>
+  <version>1.2</version>
+  <configuration>
+    <host>https://xbdd</host>
+    <username>${xbdd.username}</username>
+    <password>${xbdd.password}</password>
+    <projectKey>your-project-name<projectKey>
+    <projectVersion>${project.version}</projectVersion>
+    <buildNumber>${bamboo.build.number}</buildNumber>
+    <reports>
+      <report>${project.build.directory}/cucumber-report-manual.json</report>
+      <report>${project.build.directory}/cucumber-report-auto.json</report>
+    </reports>
+  </configuration>
+</plugin>
 ```
+
 Run via `mvn clean verify xbdd:upload`.
 
 # Configuration
 
-*host* - the hostname of your XBDD server.
-*username* - username of the XBDD user to upload the reports as. Best to pass it in on the commandline. In the example above, `-Dxbdd.username=theusername`
-*password* - password for the XBDD user. Best to pass it in on the commandline as well. In the example above, `-Dxbdd.password=thepassword`
-*projectKey* - optional. The name of the project in XBDD. If left blank it will default to the artifactId of the project.
-MORE HERE.
+* `host` - the hostname of your XBDD server.
+* `username` - username of the XBDD user to upload the reports as. It is best to pass it in on the commandline so that credentials are not visible. You can either have the XML config with a placeholder as per the example above and then build via `-Dxbdd.username=theusername`, or remove the line entirely and pass it in via -Dusername=theusername.
+* `password` - password of the XBDD user to upload the reports as. It is best to pass it in on the commandline so that credentials are not visible. You can either have the XML config with a placeholder as per the example above and then build via `-Dxbdd.password=thepassword`, or remove the line entirely and pass it in via -Dpassword=thepassword.
+* `projectKey` - optional. The name of the project in XBDD. If left blank it will default to the artifactId of the project from the POM.
+* `projectVersion` - optional. The version of the project in XBDD. If left blank it will default to the version of the project from the POM.
+* `buildNumber` - optional. If using a CI tool like Bamboo you might like to pass this in, otherwise it will default to epoch seconds.
+8 `reports` - the list of reports to upload.
+
 
 # For developers (building)
 Build and test: 
