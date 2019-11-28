@@ -238,7 +238,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private String getUrl() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(slashify(this.host));
-		sb.append("xbdd/rest/reports/");
+		sb.append("rest/reports/");
 		sb.append(slashify(this.projectKey));
 		sb.append(slashify(this.projectVersion));
 		sb.append(slashify(this.buildNumber));
