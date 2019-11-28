@@ -205,12 +205,20 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			}
 
 			request.setEntity(entity);
-
+			
 			try {
 				final CloseableHttpResponse response = httpClient.execute(request);
-
-				getLog().info(String.format("XBDD upload result: %d %s", response.getStatusLine().getStatusCode(),
-						response.getStatusLine().getReasonPhrase()));
+				
+				int statusCode = response.getStatusLine().getStatusCode();
+				
+				// check response
+				if(statusCode == 200) {
+					getLog().info(String.format("XBDD upload result: %d %s", response.getStatusLine().getStatusCode(),
+							response.getStatusLine().getReasonPhrase()));
+				} else {
+					getLog().error(String.format("Error uploading to XBDD: %d %s", response.getStatusLine().getStatusCode(),
+							response.getStatusLine().getReasonPhrase()));
+				}
 
 			} catch (final IOException e) {
 				e.printStackTrace();
