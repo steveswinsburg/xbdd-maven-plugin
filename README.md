@@ -41,7 +41,7 @@ Run via `mvn clean verify xbdd:upload`.
 * `projectKey` - optional. The name of the project in XBDD. If left blank it will default to the artifactId of the project from the POM.
 * `projectVersion` - optional. The version of the project in XBDD. If left blank it will default to the version of the project from the POM.
 * `buildNumber` - optional. If using a CI tool like Bamboo you might like to pass this in, otherwise it will default to epoch seconds.
-8 `reports` - the list of reports to upload.
+* `reports` - the list of reports to upload.
 
 
 # For developers (building)
