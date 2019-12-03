@@ -19,6 +19,8 @@ mvn clean install
 
 # For developers (releasing)
 
+Note that all release plugins and processes are contained in the `release` profile which must always be activated.
+
 1. Read https://central.sonatype.org/pages/apache-maven.html and https://central.sonatype.org/pages/working-with-pgp-signatures.html
 2. Install `gpg`
 3. Add a release profile to your `~/.m2/settings.xml`:
@@ -44,18 +46,21 @@ mvn clean install
 ```
 _Note that this can be a token generated from https://oss.sonatype.org/._
 
-**Snapshot deploy:** 
+**Snapshot deploy** 
 ```
 mvn clean deploy -P release
 ```
 It should build and upload. Go to https://oss.sonatype.org/ and search for `xbdd-maven-plugin`. 
 
-Release deploy: 
+**Release deploy**
 ```
-mvn release:clean release:prepare
-mvn release:perform
+mvn release:clean release:prepare -P release
+mvn release:perform -P release
 ```
-Go to https://oss.sonatype.org/#stagingRepositories and look for errors. If ok, release.
+
+**Troubleshooting**
+
+If the `release:perform` step doesn't auto release, go to https://oss.sonatype.org/#stagingRepositories and look for errors and fix them.
 
 # Release docs
 * https://central.sonatype.org/pages/working-with-pgp-signatures.html
