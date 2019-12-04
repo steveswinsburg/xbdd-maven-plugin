@@ -15,7 +15,7 @@ Add the following block to your pom.xml
 <plugin>
   <groupId>io.github.steveswinsburg</groupId>
   <artifactId>xbdd-maven-plugin</artifactId>
-  <version>1.2</version>
+  <version>1.3</version>
   <configuration>
     <host>https://xbdd</host>
     <username>${xbdd.username}</username>
