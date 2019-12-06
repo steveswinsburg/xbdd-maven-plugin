@@ -6,8 +6,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
@@ -32,6 +34,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.model.fileset.FileSet;
+import org.apache.maven.shared.model.fileset.util.FileSetManager;
 import org.apache.maven.shared.utils.io.FileUtils;
 
 import lombok.Getter;
@@ -89,9 +93,24 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	@Parameter(property = XBDD_PROJECT_BUILD_NUMBER)
 	private String buildNumber;
 
+	/**
+	 * Individual reports
+	 */
 	@Getter
 	@Parameter(property = XBDD_REPORT)
-	private List<String> reports;
+	private Set<String> reports;
+
+	/**
+	 * A list of <code>fileSet</code> rules to select files and directories.
+	 */
+	@Parameter
+	private Set<FileSet> filesets;
+
+	/**
+	 * A specific <code>fileSet</code> rule to select files and directories.
+	 */
+	@Parameter
+	private FileSet fileset;
 
 	/**
 	 * The project that is running this plugin
@@ -120,8 +139,10 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			return;
 		}
 
+		expandFilesets();
+
 		if (this.reports.isEmpty()) {
-			getLog().error("No reports to upload. Aborting upload.");
+			getLog().error("No reports specified. Aborting upload.");
 			return;
 		}
 
@@ -312,8 +333,52 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 */
 	private void cleanReports() {
 		if (this.reports != null) {
-			this.reports = this.reports.stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toList());
+			this.reports = this.reports.stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
 		}
+	}
+
+	private void expandFilesets() {
+
+		getLog().info(String.format("Initial reports: %s", this.reports));
+
+		// get the files from the single fileset
+		if (this.fileset != null) {
+			this.reports.addAll(expandFileset(this.fileset));
+		}
+
+		// and from the multiple
+		if (this.filesets != null && !this.filesets.isEmpty()) {
+			this.filesets.forEach(fs -> {
+				this.reports.addAll(expandFileset(fs));
+			});
+		}
+
+		// TODO this only gets the filename. we need the ful name based on the fielset
+
+		getLog().info(String.format("Expanded reports: %s", this.reports));
+	}
+
+	/**
+	 * Get each of the files from a fileset, including the base dir, so it is filesystem addressable
+	 *
+	 * @param manager
+	 * @param fs
+	 * @return
+	 */
+	private Set<String> expandFileset(final FileSet fs) {
+
+		final FileSetManager fileSetManager = new FileSetManager();
+
+		final String baseDir = fs.getDirectory();
+
+		final List<String> filenames = Arrays.asList(fileSetManager.getIncludedFiles(fs));
+		final Set<String> rval = new HashSet<>();
+
+		filenames.forEach(filename -> {
+			rval.add(String.join("/", baseDir, filename));
+		});
+
+		return rval;
 	}
 
 }

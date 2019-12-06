@@ -8,8 +8,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.test.sourceEncoding>UTF-8</project.test.sourceEncoding>
-    <!--  add this so that we always get a report -->
-    <!--<maven.test.failure.ignore>true</maven.test.failure.ignore>-->
   </properties>
 
   <dependencies>
@@ -69,10 +67,31 @@
               <username>${xbdd.username}</username>
               <password>${xbdd.password}</password>
               <buildNumber>${xbdd.buildNumber}</buildNumber>
+              <!---
               <reports>
                 <report>${project.build.directory}/cucumber-report-manual.json</report>
                 <report>${project.build.directory}/cucumber-report-auto.json</report>
               </reports>
+              -->
+              <!--
+              <fileset>
+                <directory>${project.build.directory}</directory>
+                <includes>
+                  <include>**/*.json</include>
+                </includes>
+              </fileset>
+              -->
+             
+              <filesets>
+              
+              <fileset>
+                <directory>${project.build.directory}</directory>
+                <includes>
+                  <include>**/*.json</include>
+                </includes>
+              </fileset>
+              </filesets>
+              
             </configuration>
           </execution>
         </executions>
