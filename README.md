@@ -1,5 +1,5 @@
 # xbdd-maven-plugin
-A Maven plugin to automatically send test results to XBDD.
+A Maven plugin to automatically send integration test results to XBDD.
 
 For more information on XBDD, visit: https://github.com/orionhealth/XBDD
 
@@ -31,7 +31,22 @@ Add the following block to your pom.xml
 </plugin>
 ```
 
+In your pom, also add the following:
+
+```
+<properties>
+  <maven.test.failure.ignore>true</maven.test.failure.ignore>
+</properties>
+```
+
+This is so that the report always gets uploaded even if there are test failures.
+
+
 Run via `mvn clean verify xbdd:upload`.
+
+# Examples
+
+See the examples project for a comprehensive example of feature files, how they are wired up, tagging, and ways to run this plugin.
 
 # Configuration
 
