@@ -186,26 +186,29 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		request.addHeader(new BasicScheme().authenticate(creds, request, null));
 		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
-		// StringEntity entity = new StringEntity(json);
-		// httpPost.setEntity(entity);
-		// httpPost.setHeader("Accept", "application/json");
-		// httpPost.setHeader("Content-type", "application/json");
-
-		this.reports.forEach(r -> {
-
+		for(String r: reports) {
+		
 			getLog().info(String.format("Uploading report: %s ", r));
 			StringEntity entity = null;
 
+			// check file exists
+			if(!FileUtils.fileExists(r)) {
+				getLog().error(String.format("Report does not exist. Skipping: %s", r));
+				continue;
+			}
+			
+			// read the file
 			try {
 				final String json = FileUtils.fileRead(r);
 				entity = new StringEntity(json);
-
 			} catch (final IOException e) {
 				getLog().error(String.format("Cannot upload: %s", r));
+				continue;
 			}
 
 			request.setEntity(entity);
 			
+			// upload the file
 			try {
 				final CloseableHttpResponse response = httpClient.execute(request);
 				
@@ -224,7 +227,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 				e.printStackTrace();
 			}
 
-		});
+		}
 
 		httpClient.close();
 
