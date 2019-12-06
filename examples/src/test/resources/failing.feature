@@ -1,3 +1,4 @@
+@ShouldAlwaysFail
 Feature: Some automated tests that always fail
   These tests always fail
 

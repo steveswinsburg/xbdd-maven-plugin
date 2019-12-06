@@ -1,3 +1,4 @@
+@ShouldAlwaysPass
 Feature: Some automated tests that always pass
   These tests always pass
 

@@ -1,6 +1,6 @@
 @Manual
-Feature: Some manual tests
-  These tests will never be run automatically and must always be manually ticked off in XBDD
+Feature: A manual tests
+  This test will never be run automatically and must always be manually ticked off in XBDD
 
   @Manual
   Scenario: Manual test 1
