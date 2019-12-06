@@ -186,17 +186,17 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 		request.addHeader(new BasicScheme().authenticate(creds, request, null));
 		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
-		for(String r: reports) {
-		
+		for (final String r : this.reports) {
+
 			getLog().info(String.format("Uploading report: %s ", r));
 			StringEntity entity = null;
 
 			// check file exists
-			if(!FileUtils.fileExists(r)) {
+			if (!FileUtils.fileExists(r)) {
 				getLog().error(String.format("Report does not exist. Skipping: %s", r));
 				continue;
 			}
-			
+
 			// read the file
 			try {
 				final String json = FileUtils.fileRead(r);
@@ -207,15 +207,15 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			}
 
 			request.setEntity(entity);
-			
+
 			// upload the file
 			try {
 				final CloseableHttpResponse response = httpClient.execute(request);
-				
-				int statusCode = response.getStatusLine().getStatusCode();
-				
+
+				final int statusCode = response.getStatusLine().getStatusCode();
+
 				// check response
-				if(statusCode == 200) {
+				if (statusCode == 200) {
 					getLog().info(String.format("XBDD upload result: %d %s", response.getStatusLine().getStatusCode(),
 							response.getStatusLine().getReasonPhrase()));
 				} else {
