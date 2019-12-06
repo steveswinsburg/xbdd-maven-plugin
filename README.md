@@ -16,33 +16,33 @@ Add the following block to your pom.xml
   <groupId>io.github.steveswinsburg</groupId>
   <artifactId>xbdd-maven-plugin</artifactId>
   <version>1.3</version>
-  <configuration>
-    <host>https://xbdd</host>
-    <username>${xbdd.username}</username>
-    <password>${xbdd.password}</password>
-    <projectKey>your-project-name<projectKey>
-    <projectVersion>${project.version}</projectVersion>
-    <buildNumber>${bamboo.build.number}</buildNumber>
-    <reports>
-      <report>${project.build.directory}/cucumber-report-manual.json</report>
-      <report>${project.build.directory}/cucumber-report-auto.json</report>
-    </reports>
-  </configuration>
+  <executions>
+    <execution>
+      <phase>post-integration-test</phase>
+      <goals>
+        <goal>upload</goal>
+      </goals>
+      <configuration>
+        <host>https://xbdd</host>
+        <username>${xbdd.username}</username>
+        <password>${xbdd.password}</password>
+        <projectKey>your-project-name<projectKey>
+        <projectVersion>${project.version}</projectVersion>
+        <buildNumber>${bamboo.build.number}</buildNumber>
+        <reports>
+          <report>${project.build.directory}/cucumber-report-manual.json</report>
+          <report>${project.build.directory}/cucumber-report-auto.json</report>
+        </reports>
+      </configuration>
+    </execution>
+  </executions>
 </plugin>
-```
-
-In your pom, also add the following:
 
 ```
-<properties>
-  <maven.test.failure.ignore>true</maven.test.failure.ignore>
-</properties>
-```
+Doing it this way means the plugin is *automatically* wired into the test lifecycle, and any integration test failures will be captured by the report and uploaded, before the build fails.
 
-This is so that the report always gets uploaded even if there are test failures.
+You can also manually run the plugin via `mvn xbdd:upload`.
 
-
-Run via `mvn clean verify xbdd:upload`.
 
 # Examples
 
