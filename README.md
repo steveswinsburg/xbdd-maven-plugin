@@ -15,7 +15,7 @@ Add the following block to your pom.xml
 <plugin>
   <groupId>io.github.steveswinsburg</groupId>
   <artifactId>xbdd-maven-plugin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
   <executions>
     <execution>
       <phase>post-integration-test</phase>
@@ -29,10 +29,14 @@ Add the following block to your pom.xml
         <projectKey>your-project-name<projectKey>
         <projectVersion>${project.version}</projectVersion>
         <buildNumber>${bamboo.build.number}</buildNumber>
-        <reports>
-          <report>${project.build.directory}/cucumber-report-manual.json</report>
-          <report>${project.build.directory}/cucumber-report-auto.json</report>
-        </reports>
+        <filesets>
+          <fileset>
+            <directory>${project.build.directory}/failsafe-reports</directory>
+            <includes>
+              <include>**/*.json</include>
+            </includes>
+          </fileset>
+        </filesets>
       </configuration>
     </execution>
   </executions>
@@ -56,8 +60,7 @@ See the examples project for a comprehensive example of feature files, how they 
 * `projectKey` - optional. The name of the project in XBDD. If left blank it will default to the artifactId of the project from the POM.
 * `projectVersion` - optional. The version of the project in XBDD. If left blank it will default to the version of the project from the POM.
 * `buildNumber` - optional. If using a CI tool like Bamboo you might like to pass this in, otherwise it will default to epoch seconds.
-* `reports` - the list of reports to upload.
-
+* `filesets` - required. Standard fileset config for listing the json report files. Note that only `includes` are currently supported. Raise a ticket if you want excludes to be supported as well. Proior to 1.4, this property was `reports` and has a set of reports that you could upload, but this wasn't flexible enough. The `reports` param will be dropped in 1.5.
 
 # For developers (building)
 Build and test: 
