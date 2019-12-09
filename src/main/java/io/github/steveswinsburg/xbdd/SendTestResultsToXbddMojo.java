@@ -178,11 +178,11 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	/**
 	 * Do the upload work
 	 *
-	 * @throws KeyStoreException
-	 * @throws NoSuchAlgorithmException
-	 * @throws KeyManagementException
-	 * @throws AuthenticationException
-	 * @throws IOException
+	 * @throws KeyStoreException if exception
+	 * @throws NoSuchAlgorithmException if exception
+	 * @throws KeyManagementException if exception
+	 * @throws AuthenticationException if exception
+	 * @throws IOException if exception
 	 */
 	protected void upload()
 			throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, AuthenticationException, IOException {
@@ -339,7 +339,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 	private void expandFilesets() {
 
-		getLog().info(String.format("Initial reports: %s", this.reports));
+		getLog().debug(String.format("Initial reports: %s", this.reports));
 
 		// get the files from the single fileset
 		if (this.fileset != null) {
@@ -353,9 +353,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			});
 		}
 
-		// TODO this only gets the filename. we need the ful name based on the fielset
-
-		getLog().info(String.format("Expanded reports: %s", this.reports));
+		getLog().debug(String.format("Expanded reports: %s", this.reports));
 	}
 
 	/**
