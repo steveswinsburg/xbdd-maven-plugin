@@ -19,6 +19,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -27,6 +28,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -197,10 +199,18 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 				.loadTrustMaterial(null, (x509CertChain, authType) -> true)
 				.build();
 
+		// set a timeout
+		final int timeout = 30; // seconds
+		final RequestConfig timeoutConfig = RequestConfig.custom()
+				.setConnectTimeout(timeout * 1000)
+				.setConnectionRequestTimeout(timeout * 1000)
+				.setSocketTimeout(timeout * 1000).build();
+
 		final CloseableHttpClient httpClient = HttpClientBuilder
 				.create()
 				.setSSLContext(sslContext)
 				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+				.setDefaultRequestConfig(timeoutConfig)
 				.build();
 
 		final HttpPut request = new HttpPut(url);
@@ -234,6 +244,10 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 				final CloseableHttpResponse response = httpClient.execute(request);
 
 				final int statusCode = response.getStatusLine().getStatusCode();
+
+				// close the content stream.
+				// Allows us to reuse the same client.
+				EntityUtils.consumeQuietly(response.getEntity());
 
 				// check response
 				if (statusCode == 200) {

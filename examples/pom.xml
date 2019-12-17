@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.steveswinsburg</groupId>
   <artifactId>xbdd-maven-plugin-example</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.5-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,7 +55,7 @@
       <plugin>
         <groupId>io.github.steveswinsburg</groupId>
         <artifactId>xbdd-maven-plugin</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
         <executions>
           <execution>
             <phase>post-integration-test</phase>
