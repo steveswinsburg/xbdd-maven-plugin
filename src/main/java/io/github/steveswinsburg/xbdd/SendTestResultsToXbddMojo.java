@@ -1,6 +1,7 @@
 package io.github.steveswinsburg.xbdd;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -23,6 +24,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -215,7 +217,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 		final HttpPut request = new HttpPut(url);
 		request.addHeader(new BasicScheme().authenticate(creds, request, null));
-		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+		request.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 
 		for (final String r : this.reports) {
 
@@ -230,8 +232,8 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 			// read the file
 			try {
-				final String json = FileUtils.fileRead(r);
-				entity = new StringEntity(json);
+				final String json = FileUtils.fileRead(r); 
+				entity = new StringEntity(json, StandardCharsets.UTF_8);
 			} catch (final IOException e) {
 				getLog().error(String.format("Cannot upload: %s", r));
 				continue;
@@ -243,11 +245,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			try {
 				final CloseableHttpResponse response = httpClient.execute(request);
 
-				final int statusCode = response.getStatusLine().getStatusCode();
-
-				// close the content stream.
-				// Allows us to reuse the same client.
-				EntityUtils.consumeQuietly(response.getEntity());
+				final int statusCode = response.getStatusLine().getStatusCode();				
 
 				// check response
 				if (statusCode == 200) {
@@ -256,7 +254,12 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 				} else {
 					getLog().error(String.format("Error uploading to XBDD: %d %s", response.getStatusLine().getStatusCode(),
 							response.getStatusLine().getReasonPhrase()));
+					getLog().error(EntityUtils.toString(response.getEntity()));
 				}
+				
+				// close the content stream.
+				// Allows us to reuse the same client.
+				EntityUtils.consumeQuietly(response.getEntity());
 
 			} catch (final IOException e) {
 				e.printStackTrace();
