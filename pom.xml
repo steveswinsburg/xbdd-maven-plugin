@@ -3,7 +3,7 @@
 
 	<groupId>io.github.steveswinsburg</groupId>
 	<artifactId>xbdd-maven-plugin</artifactId>
-	<version>1.5</version>
+	<version>1.6-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>XBDD Maven Plugin</name>
@@ -34,7 +34,7 @@
 		<connection>scm:git:git@github.com:steveswinsburg/xbdd-maven-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:steveswinsburg/xbdd-maven-plugin.git</developerConnection>
 		<url>scm:git:git@github.com:steveswinsburg/xbdd-maven-plugin.git</url>
-		<tag>xbdd-maven-plugin-1.5</tag>
+		<tag>xbdd-maven-plugin-1.3</tag>
 	</scm>
 
 	<properties>
