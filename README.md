@@ -61,6 +61,7 @@ See the examples project for a comprehensive example of feature files, how they 
 * `projectVersion` - optional. The version of the project in XBDD. If left blank it will default to the version of the project from the POM.
 * `buildNumber` - optional. If using a CI tool like Bamboo you might like to pass this in, otherwise it will default to epoch seconds.
 * `filesets` - required. Standard fileset config for listing the json report files. Note that only `includes` are currently supported. Raise a ticket if you want excludes to be supported as well. Proior to 1.4, this property was `reports` and has a set of reports that you could upload, but this wasn't flexible enough. The `reports` param will be dropped in 1.5.
+* `xbdd.skip` - optional. Set to true to skip plugin execution. Leave this out or set to false if it is to run normally.
 
 # For developers (building)
 Build and test: 

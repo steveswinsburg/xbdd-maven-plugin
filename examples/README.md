@@ -17,3 +17,6 @@ mvn clean verify \
 -Dxbdd.password=YOUR_XBDD_PASSWORD
 ```
 
+Test the skip of execution by adding `-Dxbdd.skip=true`
+
+

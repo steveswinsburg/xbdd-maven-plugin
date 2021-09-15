@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpHeaders;
@@ -54,6 +55,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private static final String XBDD_PROJECT_VERSION = "projectVersion";
 	private static final String XBDD_PROJECT_BUILD_NUMBER = "buildNumber";
 	private static final String XBDD_REPORT = "report";
+	private static final String XBDD_SKIP = "xbdd.skip";
 
 	/**
 	 * The host URL of XBDD
@@ -105,6 +107,13 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private Set<String> reports;
 
 	/**
+	 * Enables skipping the execution
+	 */
+	@Getter
+	@Parameter(property = XBDD_SKIP)
+	private Boolean skip;
+
+	/**
 	 * A list of <code>fileSet</code> rules to select files and directories.
 	 */
 	@Parameter
@@ -123,8 +132,14 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	MavenProject project;
 
+	@SuppressWarnings("unused")
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+
+		if (BooleanUtils.isTrue(this.skip)) {
+			getLog().info("xbdd.skip flag is enabled, so not running this plugin.");
+			return;
+		}
 
 		ensureBuildNumber();
 		ensureProjectKey();
@@ -173,9 +188,9 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 * Check if any of the provided elements are empty
 	 *
 	 * @param elements elements to check for emptiness
-	 * @return
+	 * @return boolean
 	 */
-	private boolean anyEmpty(final String... elements) {
+	private static boolean anyEmpty(final String... elements) {
 		return Arrays.asList(elements).stream().anyMatch(e -> StringUtils.isBlank(e));
 	}
 
@@ -232,7 +247,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 
 			// read the file
 			try {
-				final String json = FileUtils.fileRead(r); 
+				final String json = FileUtils.fileRead(r);
 				entity = new StringEntity(json, StandardCharsets.UTF_8);
 			} catch (final IOException e) {
 				getLog().error(String.format("Cannot upload: %s", r));
@@ -245,7 +260,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 			try {
 				final CloseableHttpResponse response = httpClient.execute(request);
 
-				final int statusCode = response.getStatusLine().getStatusCode();				
+				final int statusCode = response.getStatusLine().getStatusCode();
 
 				// check response
 				if (statusCode == 200) {
@@ -256,7 +271,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 							response.getStatusLine().getReasonPhrase()));
 					getLog().error(EntityUtils.toString(response.getEntity()));
 				}
-				
+
 				// close the content stream.
 				// Allows us to reuse the same client.
 				EntityUtils.consumeQuietly(response.getEntity());
@@ -292,7 +307,7 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 * @param s the string
 	 * @return the string with a /
 	 */
-	private String slashify(final String s) {
+	private static String slashify(final String s) {
 		return StringUtils.appendIfMissing(s, "/");
 	}
 
@@ -376,11 +391,10 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	/**
 	 * Get each of the files from a fileset, including the base dir, so it is filesystem addressable
 	 *
-	 * @param manager
-	 * @param fs
-	 * @return
+	 * @param fs the fileset
+	 * @return the set of files
 	 */
-	private Set<String> expandFileset(final FileSet fs) {
+	private static Set<String> expandFileset(final FileSet fs) {
 
 		final FileSetManager fileSetManager = new FileSetManager();
 
