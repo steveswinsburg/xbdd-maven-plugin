@@ -54,7 +54,6 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private static final String XBDD_PROJECT_KEY = "projectKey";
 	private static final String XBDD_PROJECT_VERSION = "projectVersion";
 	private static final String XBDD_PROJECT_BUILD_NUMBER = "buildNumber";
-	private static final String XBDD_REPORT = "report";
 	private static final String XBDD_SKIP = "xbdd.skip";
 
 	/**
@@ -100,13 +99,6 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private String buildNumber;
 
 	/**
-	 * Individual reports
-	 */
-	@Getter
-	@Parameter(property = XBDD_REPORT)
-	private Set<String> reports;
-
-	/**
 	 * Enables skipping the execution
 	 */
 	@Getter
@@ -124,6 +116,11 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	 */
 	@Parameter
 	private FileSet fileset;
+
+	/**
+	 * All reports to be uploaded
+	 */
+	private Set<String> reports;
 
 	/**
 	 * The project that is running this plugin
@@ -366,6 +363,8 @@ public class SendTestResultsToXbddMojo extends AbstractMojo {
 	private void cleanReports() {
 		if (this.reports != null) {
 			this.reports = this.reports.stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
+		} else {
+			this.reports = new HashSet<>();
 		}
 	}
 
